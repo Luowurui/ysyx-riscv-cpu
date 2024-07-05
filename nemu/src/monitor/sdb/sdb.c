@@ -56,6 +56,8 @@ static int cmd_help(char *args);
 
 static int cmd_si(char *args);
 
+static int cmd_info(char *args);
+
 static struct {
   const char *name;
   const char *description;
@@ -65,6 +67,7 @@ static struct {
   { "c", "Continue the execution of the program", cmd_c },
   { "q", "Exit NEMU", cmd_q },
   { "si", "Execute [n] command of the program ", cmd_si },
+  { "info", "Printf the reg info with [r] and breakpoint info with [w]", cmd_info },
   /* TODO: Add more commands */
 
 };
@@ -107,6 +110,22 @@ static int cmd_si(char *args) {
   {
     int n = atoi(arg);
     cpu_exec(n);
+  }
+  return 0;
+}
+
+static int cmd_info(char *args) {
+  /* extract the first argument */
+  char *arg = strtok(NULL, " ");
+
+  if (arg == NULL) {
+    /* no argument given*/
+    printf("Please enter the args:r/w");
+  }
+  else /*excute n code*/
+  {
+    if(*arg == 'r') isa_reg_display();
+    else {};//waiting for w
   }
   return 0;
 }
