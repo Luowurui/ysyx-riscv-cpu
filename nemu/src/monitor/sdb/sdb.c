@@ -44,7 +44,7 @@ static char* rl_gets() {
 
 static int cmd_c(char *args) {
   cpu_exec(-1);
-  return 0;
+  return 0;//return0使得该函数不断被调用
 }
 
 
@@ -54,6 +54,8 @@ static int cmd_q(char *args) {
 
 static int cmd_help(char *args);
 
+static int cmd_si(char *args);
+
 static struct {
   const char *name;
   const char *description;
@@ -62,7 +64,7 @@ static struct {
   { "help", "Display information about all supported commands", cmd_help },
   { "c", "Continue the execution of the program", cmd_c },
   { "q", "Exit NEMU", cmd_q },
-
+  { "si", "Execute [n] command of the program ", cmd_si },
   /* TODO: Add more commands */
 
 };
@@ -80,7 +82,8 @@ static int cmd_help(char *args) {
       printf("%s - %s\n", cmd_table[i].name, cmd_table[i].description);
     }
   }
-  else {
+  else /*指定指令*/
+  {
     for (i = 0; i < NR_CMD; i ++) {
       if (strcmp(arg, cmd_table[i].name) == 0) {
         printf("%s - %s\n", cmd_table[i].name, cmd_table[i].description);
@@ -88,6 +91,22 @@ static int cmd_help(char *args) {
       }
     }
     printf("Unknown command '%s'\n", arg);
+  }
+  return 0;
+}
+
+static int cmd_si(char *args) {
+  /* extract the first argument */
+  char *arg = strtok(NULL, " ");
+
+  if (arg == NULL) {
+    /* no argument given excute once*/
+    cpu_exec(1);
+  }
+  else /*excute n code*/
+  {
+    int n = atoi(arg);
+    cpu_exec(n);
   }
   return 0;
 }
@@ -101,7 +120,7 @@ void sdb_mainloop() {
     cmd_c(NULL);
     return;
   }
-
+  /*字符处理*/
   for (char *str; (str = rl_gets()) != NULL; ) {
     char *str_end = str + strlen(str);
 
