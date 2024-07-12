@@ -29,7 +29,7 @@ void isa_reg_display() {
 
     // 遍历并打印所有寄存器名称
     for (int i = 0; i < num_regs; i++) {
-        printf("%s 0x%08x\n", regs[i],cpu.gpr[i]);
+        printf("%s 0x%x\n", regs[i],cpu.gpr[i]);
     }
 }
 
