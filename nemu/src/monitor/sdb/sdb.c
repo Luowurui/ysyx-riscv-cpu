@@ -149,7 +149,7 @@ static int cmd_x(char *args) {
     paddr_t addr = strtol(arg,NULL,16);
     for(;n!=0;)
     {
-      printf("addr = 0x%x ,data = 0x%x",addr,paddr_read(addr,4));
+      printf("addr = 0x%08x ,data = 0x%08x\n",addr,paddr_read(addr,4));
       addr++;
       n--;
     }
