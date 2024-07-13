@@ -24,7 +24,15 @@ const char *regs[] = {
 };
 
 void isa_reg_display() {
+    // 计算 regs 数组的长度
+    int num_regs = sizeof(regs) / sizeof(regs[0]);
+
+    // 遍历并打印所有寄存器名称
+    for (int i = 0; i < num_regs; i++) {
+        printf("%s 0x%08x\n", regs[i],cpu.gpr[i]);
+    }
 }
+
 
 word_t isa_reg_str2val(const char *s, bool *success) {
   return 0;
