@@ -17,6 +17,7 @@
 #include <cpu/cpu.h>
 #include <readline/readline.h>
 #include <readline/history.h>
+#include <memory/paddr.h>
 #include "sdb.h"
 
 static int is_batch_mode = false;
@@ -58,6 +59,8 @@ static int cmd_si(char *args);
 
 static int cmd_info(char *args);
 
+static int cmd_x(char *args);
+
 static struct {
   const char *name;
   const char *description;
@@ -68,6 +71,7 @@ static struct {
   { "q", "Exit NEMU", cmd_q },
   { "si", "Execute [n] command of the program ", cmd_si },
   { "info", "Printf the reg info with [r] and breakpoint info with [w]", cmd_info },
+  { "x", "Set EXPR as start address and print N ", cmd_x },
   /* TODO: Add more commands */
 
 };
@@ -126,6 +130,29 @@ static int cmd_info(char *args) {
   {
     if(*arg == 'r') isa_reg_display();
     else {};//waiting for w
+  }
+  return 0;
+}
+
+static int cmd_x(char *args) {
+  /* extract the first argument */
+  char *arg = strtok(NULL, " ");
+
+  if (arg == NULL) {
+    /* no argument given*/
+    printf("Please enter the args\n");
+  }
+  else /*excute n code*/
+  {
+    int n = atoi(arg);
+    char *arg = strtok(NULL, " ");
+    paddr_t addr = strtol(arg,NULL,16);
+    for(;n!=0;)
+    {
+      printf("addr = 0x%x ,data = 0x%x",addr,paddr_read(addr,4));
+      addr++;
+      n--;
+    }
   }
   return 0;
 }
