@@ -150,7 +150,7 @@ static int cmd_x(char *args) {
     for(;n!=0;)
     {
       printf("addr = 0x%08x ,data = 0x%08x\n",addr,paddr_read(addr,4));
-      addr++;
+      addr+=4;
       n--;
     }
   }
