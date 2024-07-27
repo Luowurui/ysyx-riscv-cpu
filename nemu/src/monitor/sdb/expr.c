@@ -44,8 +44,8 @@ static struct rule {
   {"(", '('},           // left kuo
   {")", ')'},           // right
   {"==", TK_EQ},        // equal
-  {"[0-9]+", TK_NUM},         // numbers
-  {"[a-zA-Z_][a-zA-Z0-9_]*", TK_ID}, // identifiers (variables, etc.)
+  {"[0-9]", TK_NUM},         // numbers
+  //{"[a-zA-Z_][a-zA-Z0-9_]*", TK_ID}, // identifiers (variables, etc.)
 };
 
 #define NR_REGEX ARRLEN(rules)
