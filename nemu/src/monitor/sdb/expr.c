@@ -22,6 +22,7 @@
 
 enum {
   TK_NOTYPE = 256, TK_EQ,
+  TK_NUM,TK_ID
 
   /* TODO: Add more token types */
 
@@ -35,10 +36,16 @@ static struct rule {
   /* TODO: Add more rules.
    * Pay attention to the precedence level of different rules.
    */
-
   {" +", TK_NOTYPE},    // spaces
   {"\\+", '+'},         // plus
+  {"-", '-'},           // minus
+  {"\\*", '*'},         // multiply
+  {"/", '/'},           // divide
+  {"(", '('},           // left kuo
+  {")", ')'},           // right
   {"==", TK_EQ},        // equal
+  {"[0-9]+", TK_NUM},         // numbers
+  {"[a-zA-Z_][a-zA-Z0-9_]*", TK_ID}, // identifiers (variables, etc.)
 };
 
 #define NR_REGEX ARRLEN(rules)
@@ -75,7 +82,7 @@ static bool make_token(char *e) {
   int i;
   regmatch_t pmatch;
 
-  nr_token = 0;
+  nr_token = 0;//指示已被识别出的token数目
 
   while (e[position] != '\0') {
     /* Try all rules one by one. */
@@ -95,6 +102,17 @@ static bool make_token(char *e) {
          */
 
         switch (rules[i].token_type) {
+          case '+':
+          case '-':
+          case '*':
+          case '/':
+          case '(':
+          case ')':
+          case TK_EQ: 
+            tokens[nr_token].type = rules[i].token_type;
+            strncpy(tokens[nr_token].str,rules[i].regex,32-1);
+            tokens[nr_token].str[32-1] = '\0';
+            nr_token++;
           default: TODO();
         }
 
@@ -111,6 +129,71 @@ static bool make_token(char *e) {
   return true;
 }
 
+bool check_parentheses(int p, int q) {
+  if (tokens[p].type != '(' || tokens[q].type != ')') {
+    return false;
+  }//外部没括号
+  int count = 0;
+  for (int i = p + 1; i < q; i++) {
+    if (tokens[i].type == '(') count++;
+    if (tokens[i].type == ')') count--;
+    if (count < 0) return 0;//括号不匹配
+    assert(0);
+  }
+  if (tokens[p+1].type != '(' || tokens[q-1].type != ')') 
+    return false;//没有外部大括号
+  return true;//正常
+}
+//优先级最低的运算符为住运算符
+int find_dominant_op(int p, int q) {
+  int op = -1;
+  int level = 0;
+  for (int i = p; i <= q; i++) {
+    if (tokens[i].type == '(') level++;
+    if (tokens[i].type == ')') level--;
+    if (level == 0) {
+      if (tokens[i].type == '+' || tokens[i].type == '-') {
+        op = i;
+      } else if ((tokens[i].type == '*' || tokens[i].type == '/') && op == -1) {
+        op = i;
+      }
+    }
+  }
+  return op;
+}
+
+word_t eval(int p,int q){
+  if (p > q) {
+    /* Bad expression */
+    assert(0);
+  }
+  else if (p == q) {
+    /* Single token.
+     * For now this token should be a number.
+     * Return the value of the number.
+     */
+    return atoi(tokens[p].str);
+  }
+  else if (check_parentheses(p, q) == __GCC_ATOMIC_TEST_AND_SET_TRUEVAL) {
+    /* The expression is surrounded by a matched pair of parentheses.
+     * If that is the case, just throw away the parentheses.
+     */
+    return eval(p + 1, q - 1);
+  }
+  else {
+    int op = find_dominant_op(p,q);
+    word_t val1 = eval(p, op - 1);
+    word_t val2 = eval(op + 1, q);
+
+    switch (tokens[op].type) {
+      case '+': return val1 + val2;
+      case '-': return val1 - val2;
+      case '*': return val1 * val2;
+      case '/': return val1 / val2;
+      default: assert(0);
+    }
+  }
+}
 
 word_t expr(char *e, bool *success) {
   if (!make_token(e)) {
@@ -120,6 +203,6 @@ word_t expr(char *e, bool *success) {
 
   /* TODO: Insert codes to evaluate the expression. */
   TODO();
-
-  return 0;
+  *success = true;
+  return eval(0,nr_token-1);
 }
