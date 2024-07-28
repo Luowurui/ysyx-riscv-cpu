@@ -102,19 +102,13 @@ static bool make_token(char *e) {
          */
 
         switch (rules[i].token_type) {
-          case '+':
-          case '-':
-          case '*':
-          case '/':
-          case '(':
-          case ')':
-          case TK_EQ: 
+          case TK_NOTYPE:break;
+          default: 
             tokens[nr_token].type = rules[i].token_type;
             strncpy(tokens[nr_token].str,rules[i].regex,32-1);
             tokens[nr_token].str[32-1] = '\0';
             nr_token++;
             break;
-          default: TODO();
         }
 
         break;
