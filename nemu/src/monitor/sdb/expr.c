@@ -41,8 +41,8 @@ static struct rule {
   {"-", '-'},           // minus
   {"\\*", '*'},         // multiply
   {"/", '/'},           // divide
-  {"(", '('},           // left kuo
-  {")", ')'},           // right
+  {"\\(", '('},           // left kuo
+  {"\\)", ')'},           // right
   {"==", TK_EQ},        // equal
   {"[0-9]+", TK_NUM},         // numbers
   //{"[a-zA-Z_][a-zA-Z0-9_]*", TK_ID}, // identifiers (variables, etc.)
