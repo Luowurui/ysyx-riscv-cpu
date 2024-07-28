@@ -168,9 +168,9 @@ static int cmd_p(char *args) {
     /* no argument,error*/
     assert(0);
   }
-  bool * succes = false;
-  word_t result = expr(arg,succes);
-  if(*succes){
+  bool succes = false;
+  word_t result = expr(arg,&succes);
+  if(succes){
     printf("the result expr = %d\n",result);
     return 0;
   }
