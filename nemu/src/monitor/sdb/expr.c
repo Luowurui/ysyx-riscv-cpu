@@ -105,8 +105,8 @@ static bool make_token(char *e) {
           case TK_NOTYPE:break;
           default: 
             tokens[nr_token].type = rules[i].token_type;
-            strncpy(tokens[nr_token].str,rules[i].regex,32-1);
-            tokens[nr_token].str[32-1] = '\0';
+            strncpy(tokens[nr_token].str,rules[i].regex,substr_len > 31 ? 31 : substr_len);
+            tokens[nr_token].str[substr_len > 31 ? 31 : substr_len] = '\0';
             nr_token++;
             break;
         }
@@ -132,9 +132,9 @@ bool check_parentheses(int p, int q) {
   for (int i = p + 1; i < q; i++) {
     if (tokens[i].type == '(') count++;
     if (tokens[i].type == ')') count--;
-    if (count < 0) return 0;//括号不匹配
-    assert(0);
   }
+    if (count < 0) //return false;//括号不匹配
+    assert(0);
   if (tokens[p+1].type != '(' || tokens[q-1].type != ')') 
     return false;//没有外部大括号
   return true;//正常
