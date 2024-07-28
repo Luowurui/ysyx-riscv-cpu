@@ -113,6 +113,7 @@ static bool make_token(char *e) {
             strncpy(tokens[nr_token].str,rules[i].regex,32-1);
             tokens[nr_token].str[32-1] = '\0';
             nr_token++;
+            break;
           default: TODO();
         }
 
@@ -202,7 +203,7 @@ word_t expr(char *e, bool *success) {
   }
 
   /* TODO: Insert codes to evaluate the expression. */
-  TODO();
+  //TODO();
   *success = true;
   return eval(0,nr_token-1);
 }
