@@ -103,10 +103,12 @@ static bool make_token(char *e) {
 
         switch (rules[i].token_type) {
           case TK_NOTYPE:break;
+          case TK_NUM:
+            strncpy(tokens[nr_token].str,substr_start,substr_len > 31 ? 31 : substr_len);
+            tokens[nr_token].str[substr_len > 31 ? 31 : substr_len] = '\0';
+            break;
           default: 
             tokens[nr_token].type = rules[i].token_type;
-            strncpy(tokens[nr_token].str,rules[i].regex,substr_len > 31 ? 31 : substr_len);
-            tokens[nr_token].str[substr_len > 31 ? 31 : substr_len] = '\0';
             nr_token++;
             break;
         }
