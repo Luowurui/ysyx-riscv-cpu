@@ -138,14 +138,15 @@ bool check_parentheses(int p, int q) {
     return false;
   }//外部没括号
   int count = 0;
+  int left = 0;//用以避免出现(1+1)误判的情况
   for (int i = p + 1; i < q; i++) {
-    if (tokens[i].type == '(') count++;
+    if (tokens[i].type == '(') {count++;left++;}
     if (tokens[i].type == ')') count--;
+    if (count < 0) assert(0);//return false;//括号不匹配
   }
-    if (count < 0) //return false;//括号不匹配
-    assert(0);
-  if (tokens[p+1].type != '(' || tokens[q-1].type != ')') 
-    return false;//没有外部大括号
+    
+  if ((tokens[p+1].type != '(' || tokens[q-1].type != ')') && left >1) 
+    return false;//没有外部大括号,(1+1)*(1+1),直接拆成两个狮子
   return true;//正常
 }
 //优先级最低的运算符为住运算符
