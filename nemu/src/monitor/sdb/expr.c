@@ -99,7 +99,7 @@ static bool make_token(char *e) {
          if (rules[i].token_type != TK_NOTYPE) {
           tokens[nr_token].type = rules[i].token_type;
           if (tokens[nr_token].type == '-') {
-            if (nr_token == 0 || tokens[nr_token-1].type != TK_NUM || tokens[nr_token-1].type != ')') {
+            if (nr_token == 0 || (tokens[nr_token-1].type != TK_NUM && tokens[nr_token-1].type != ')')) {
               tokens[nr_token].type = TK_NEG;  // 是负号
             }
           }
