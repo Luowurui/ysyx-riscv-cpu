@@ -22,7 +22,7 @@
 
 enum {
   TK_NOTYPE = 256, TK_EQ,
-  TK_NUM,TK_ID
+  TK_NUM, TK_NEG,TK_ID
 
   /* TODO: Add more token types */
 
@@ -96,6 +96,13 @@ static bool make_token(char *e) {
 
         position += substr_len;
 
+         if (rules[i].token_type != TK_NOTYPE) {
+          tokens[nr_token].type = rules[i].token_type;
+          if (tokens[nr_token].type == '-') {
+            if (nr_token == 0 || tokens[nr_token-1].type != TK_NUM || tokens[nr_token-1].type != ')') {
+              tokens[nr_token].type = TK_NEG;  // 是负号
+            }
+          }
         /* TODO: Now a new token is recognized with rules[i]. Add codes
          * to record the token in the array `tokens'. For certain types
          * of tokens, some extra actions should be performed.
@@ -124,7 +131,7 @@ static bool make_token(char *e) {
       return false;
     }
   }
-
+}
   return true;
 }
 
@@ -173,12 +180,16 @@ word_t eval(int p,int q){
      */
     return atoi(tokens[p].str);
   }
+  else if (tokens[p].type == TK_NEG)
+  {
+    return -eval(p+1,q);
+  }
   else if (check_parentheses(p, q) == __GCC_ATOMIC_TEST_AND_SET_TRUEVAL) {
     /* The expression is surrounded by a matched pair of parentheses.
      * If that is the case, just throw away the parentheses.
      */
     return eval(p + 1, q - 1);
-  }
+  } 
   else {
     int op = find_dominant_op(p,q);
     word_t val1 = eval(p, op - 1);
