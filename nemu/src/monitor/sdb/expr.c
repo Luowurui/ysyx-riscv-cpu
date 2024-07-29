@@ -139,7 +139,7 @@ bool check_parentheses(int p, int q) {
   }//外部没括号
   int count = 0;
   int left = 0;//用以避免出现(1+1)误判的情况
-  for (int i = p + 1; i < q; i++) {
+  for (int i = p ; i < q; i++) {
     if (tokens[i].type == '(') {count++;left++;}
     if (tokens[i].type == ')') count--;
     if (count < 0) assert(0);//return false;//括号不匹配
