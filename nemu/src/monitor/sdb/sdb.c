@@ -61,6 +61,8 @@ static int cmd_info(char *args);
 
 static int cmd_x(char *args);
 
+static int cmd_p(char *args);
+
 static struct {
   const char *name;
   const char *description;
@@ -72,6 +74,7 @@ static struct {
   { "si", "Execute [n] command of the program ", cmd_si },
   { "info", "Printf the reg info with [r] and breakpoint info with [w]", cmd_info },
   { "x", "Set EXPR as start address and print N ", cmd_x },
+  { "p", "Compute the EXPR ", cmd_p },
   /* TODO: Add more commands */
 
 };
@@ -154,6 +157,24 @@ static int cmd_x(char *args) {
       n--;
     }
   }
+  return 0;
+}
+
+static int cmd_p(char *args) {
+  /* extract the first argument */
+  char *arg = strtok(NULL, " ");
+
+  if (arg == NULL) {
+    /* no argument,error*/
+    assert(0);
+  }
+  bool succes = false;
+  word_t result = expr(arg,&succes);
+  if(succes){
+    printf("the result expr = %d\n",result);
+    return 0;
+  }
+  else assert(0);
   return 0;
 }
 

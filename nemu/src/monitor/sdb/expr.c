@@ -22,6 +22,7 @@
 
 enum {
   TK_NOTYPE = 256, TK_EQ,
+  TK_NUM, TK_NEG,TK_ID
 
   /* TODO: Add more token types */
 
@@ -35,10 +36,16 @@ static struct rule {
   /* TODO: Add more rules.
    * Pay attention to the precedence level of different rules.
    */
-
   {" +", TK_NOTYPE},    // spaces
   {"\\+", '+'},         // plus
+  {"-", '-'},           // minus
+  {"\\*", '*'},         // multiply
+  {"/", '/'},           // divide
+  {"\\(", '('},           // left kuo
+  {"\\)", ')'},           // right
   {"==", TK_EQ},        // equal
+  {"[0-9]+", TK_NUM},         // numbers
+  //{"[a-zA-Z_][a-zA-Z0-9_]*", TK_ID}, // identifiers (variables, etc.)
 };
 
 #define NR_REGEX ARRLEN(rules)
@@ -75,7 +82,7 @@ static bool make_token(char *e) {
   int i;
   regmatch_t pmatch;
 
-  nr_token = 0;
+  nr_token = 0;//指示已被识别出的token数目
 
   while (e[position] != '\0') {
     /* Try all rules one by one. */
@@ -89,13 +96,28 @@ static bool make_token(char *e) {
 
         position += substr_len;
 
+         if (rules[i].token_type != TK_NOTYPE) {
+          tokens[nr_token].type = rules[i].token_type;
+          if (tokens[nr_token].type == '-') {
+            if (nr_token == 0 || (tokens[nr_token-1].type != TK_NUM && tokens[nr_token-1].type != ')')) {
+              tokens[nr_token].type = TK_NEG;  // 是负号
+            }
+          }
         /* TODO: Now a new token is recognized with rules[i]. Add codes
          * to record the token in the array `tokens'. For certain types
          * of tokens, some extra actions should be performed.
          */
 
         switch (rules[i].token_type) {
-          default: TODO();
+          case TK_NOTYPE:break;
+          case TK_NUM:
+            strncpy(tokens[nr_token].str,substr_start,substr_len > 31 ? 31 : substr_len);
+            tokens[nr_token].str[substr_len > 31 ? 31 : substr_len] = '\0';
+            nr_token++;
+            break;
+          default: 
+            nr_token++;
+            break;
         }
 
         break;
@@ -106,11 +128,81 @@ static bool make_token(char *e) {
       printf("no match at position %d\n%s\n%*.s^\n", position, e, position, "");
       return false;
     }
+    }
   }
-
   return true;
 }
 
+bool check_parentheses(int p, int q) {
+  if (tokens[p].type != '(' || tokens[q].type != ')') {
+    return false;
+  }//外部没括号
+  int count = 0;
+  int left = 0;//用以避免出现(1+1)误判的情况
+  for (int i = p ; i < q; i++) {
+    if (tokens[i].type == '(') {count++;left++;}
+    if (tokens[i].type == ')') count--;
+    if (count < 0) assert(0);//return false;//括号不匹配
+  }
+    
+  if ((tokens[p+1].type != '(' || tokens[q-1].type != ')') && left >1) 
+    return false;//没有外部大括号,(1+1)*(1+1),直接拆成两个狮子
+  return true;//正常
+}
+//优先级最低的运算符为住运算符
+int find_dominant_op(int p, int q) {
+  int op = -1;
+  int level = 0;
+  for (int i = p; i <= q; i++) {
+    if (tokens[i].type == '(') level++;
+    if (tokens[i].type == ')') level--;
+    if (level == 0) {
+      if (tokens[i].type == '+' || tokens[i].type == '-') {
+        op = i;
+      } else if ((tokens[i].type == '*' || tokens[i].type == '/') && op == -1) {
+        op = i;
+      }
+    }
+  }
+  return op;
+}
+
+word_t eval(int p,int q){
+  if (p > q) {
+    /* Bad expression */
+    assert(0);
+  }
+  else if (p == q) {
+    /* Single token.
+     * For now this token should be a number.
+     * Return the value of the number.
+     */
+    return atoi(tokens[p].str);
+  }
+  else if (tokens[p].type == TK_NEG)
+  {
+    return -eval(p+1,q);
+  }
+  else if (check_parentheses(p, q) == __GCC_ATOMIC_TEST_AND_SET_TRUEVAL) {
+    /* The expression is surrounded by a matched pair of parentheses.
+     * If that is the case, just throw away the parentheses.
+     */
+    return eval(p + 1, q - 1);
+  } 
+  else {
+    int op = find_dominant_op(p,q);
+    word_t val1 = eval(p, op - 1);
+    word_t val2 = eval(op + 1, q);
+
+    switch (tokens[op].type) {
+      case '+': return val1 + val2;break;
+      case '-': return val1 - val2;break;
+      case '*': return val1 * val2;break;
+      case '/': return val1 / val2;break;
+      default: assert(0);
+    }
+  }
+}
 
 word_t expr(char *e, bool *success) {
   if (!make_token(e)) {
@@ -119,7 +211,7 @@ word_t expr(char *e, bool *success) {
   }
 
   /* TODO: Insert codes to evaluate the expression. */
-  TODO();
-
-  return 0;
+  //TODO();
+  *success = true;
+  return eval(0,nr_token-1);
 }
