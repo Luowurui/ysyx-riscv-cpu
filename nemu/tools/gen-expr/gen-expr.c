@@ -31,8 +31,39 @@ static char *code_format =
 "  return 0; "
 "}";
 
+void gen_num() {
+  int num = rand() % 100; // Generates a random number between 0 and 99
+  char num_str[12];
+  sprintf(num_str, "%d", num);
+  strcat(buf, num_str);
+}
+
+void gen_rand_op() {
+  switch (rand() % 4) {
+    case 0: strcat(buf, " + "); break;
+    case 1: strcat(buf, " - "); break;
+    case 2: strcat(buf, " * "); break;
+    case 3: strcat(buf, " / "); break;
+  }
+}
+
+void gen(char c) {
+  int len = strlen(buf);
+  buf[len] = c;
+  buf[len + 1] = '\0';
+}
+
+int choose(int n) {
+  return rand() % n;
+}
+
 static void gen_rand_expr() {
-  buf[0] = '\0';
+ //buf[0] = '\0';
+  switch (choose(3)) {
+    case 0: gen_num(); break;
+    case 1: gen('('); gen_rand_expr(); gen(')'); break;
+    default: gen_rand_expr(); gen_rand_op(); gen_rand_expr(); break;
+  }
 }
 
 int main(int argc, char *argv[]) {

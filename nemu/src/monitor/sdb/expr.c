@@ -14,15 +14,15 @@
 ***************************************************************************************/
 
 #include <isa.h>
-
+#include <memory/paddr.h>
 /* We use the POSIX regex functions to process regular expressions.
  * Type 'man regex' for more information about POSIX regex functions.
  */
 #include <regex.h>
 
 enum {
-  TK_NOTYPE = 256, TK_EQ,
-  TK_NUM, TK_NEG,TK_ID
+  TK_NOTYPE = 256, TK_EQ,TK_AND,TK_NEQ,
+  TK_NUM, TK_HEX,TK_NEG,TK_REG,TK_DEREF,
 
   /* TODO: Add more token types */
 
@@ -41,11 +41,14 @@ static struct rule {
   {"-", '-'},           // minus
   {"\\*", '*'},         // multiply
   {"/", '/'},           // divide
-  {"\\(", '('},           // left kuo
-  {"\\)", ')'},           // right
-  {"==", TK_EQ},        // equal
-  {"[0-9]+", TK_NUM},         // numbers
-  //{"[a-zA-Z_][a-zA-Z0-9_]*", TK_ID}, // identifiers (variables, etc.)
+  {"\\(", '('},         // left parenthesis
+  {"\\)", ')'},         // right parenthesis
+  {"==", TK_EQ},         // equal
+  {"!=", TK_NEQ},       // not equal
+  {"&&", TK_AND},       // logical and
+  {"0x[0-9a-fA-F]+", TK_HEX}, // hexadecimal number
+  {"\\$[a-zA-Z_][a-zA-Z0-9_]*", TK_REG}, // register name
+  {"[0-9]+", TK_NUM},   // numbers 
 };
 
 #define NR_REGEX ARRLEN(rules)
@@ -97,10 +100,15 @@ static bool make_token(char *e) {
         position += substr_len;
 
          if (rules[i].token_type != TK_NOTYPE) {
-          tokens[nr_token].type = rules[i].token_type;
-          if (tokens[nr_token].type == '-') {
+          tokens[nr_token].type = rules[i].token_type;//记录type名
+          if (tokens[nr_token].type == '-') {  // 是负号判断
             if (nr_token == 0 || (tokens[nr_token-1].type != TK_NUM && tokens[nr_token-1].type != ')')) {
-              tokens[nr_token].type = TK_NEG;  // 是负号
+              tokens[nr_token].type = TK_NEG;  
+            }
+          if (tokens[nr_token].type == '*') {  // 指针判断
+            if (nr_token == 0 || (tokens[nr_token-1].type != TK_NUM && tokens[nr_token-1].type != ')')) {
+              tokens[nr_token].type = TK_DEREF;  
+            }
             }
           }
         /* TODO: Now a new token is recognized with rules[i]. Add codes
@@ -111,7 +119,13 @@ static bool make_token(char *e) {
         switch (rules[i].token_type) {
           case TK_NOTYPE:break;
           case TK_NUM:
+          case TK_HEX:
             strncpy(tokens[nr_token].str,substr_start,substr_len > 31 ? 31 : substr_len);
+            tokens[nr_token].str[substr_len > 31 ? 31 : substr_len] = '\0';
+            nr_token++;
+            break;
+          case TK_REG:
+            strncpy(tokens[nr_token].str,substr_start+1,substr_len > 31 ? 31 : substr_len);
             tokens[nr_token].str[substr_len > 31 ? 31 : substr_len] = '\0';
             nr_token++;
             break;
@@ -170,15 +184,30 @@ int find_dominant_op(int p, int q) {
 word_t eval(int p,int q){
   if (p > q) {
     /* Bad expression */
-    assert(0);
+    assert(0);return -1;
   }
   else if (p == q) {
     /* Single token.
      * For now this token should be a number.
      * Return the value of the number.
      */
-    return atoi(tokens[p].str);
+    if (tokens[p].type == TK_NUM) {
+      return atoi(tokens[p].str);
+    }
+    else if (tokens[p].type == TK_HEX) {
+      return strtol(tokens[p].str, NULL, 16);
+    }
+   // else if (tokens[p].type == TK_REG) {
+    else{
+      return isa_reg_str2val(tokens[p].str,NULL);
+    }
+
   }
+
+  else if (tokens[p].type == TK_DEREF) {
+    return paddr_read((eval(p + 1, q)),4);
+  }
+
   else if (tokens[p].type == TK_NEG)
   {
     return -eval(p+1,q);
@@ -199,7 +228,10 @@ word_t eval(int p,int q){
       case '-': return val1 - val2;break;
       case '*': return val1 * val2;break;
       case '/': return val1 / val2;break;
-      default: assert(0);
+      case TK_EQ: return val1 == val2;break;
+      case TK_NEQ: return val1 != val2;break;
+      case TK_AND: return val1 && val2;break;
+      default: assert(0);return -1;
     }
   }
 }
