@@ -50,6 +50,7 @@ static int cmd_c(char *args) {
 
 
 static int cmd_q(char *args) {
+  nemu_state.state = NEMU_QUIT;//优雅地退出
   return -1;
 }
 
@@ -63,6 +64,10 @@ static int cmd_x(char *args);
 
 static int cmd_p(char *args);
 
+static int cmd_w(char *args);
+
+static int cmd_d(char *args);
+
 static struct {
   const char *name;
   const char *description;
@@ -75,6 +80,8 @@ static struct {
   { "info", "Printf the reg info with [r] and breakpoint info with [w]", cmd_info },
   { "x", "Set EXPR as start address and print N ", cmd_x },
   { "p", "Compute the EXPR ", cmd_p },
+  { "w", "Set the watchpoint ", cmd_w },
+  { "d", "Delete the watchpoint ", cmd_d },
   /* TODO: Add more commands */
 
 };
@@ -120,7 +127,7 @@ static int cmd_si(char *args) {
   }
   return 0;
 }
-
+void wp_info();
 static int cmd_info(char *args) {
   /* extract the first argument */
   char *arg = strtok(NULL, " ");
@@ -132,7 +139,7 @@ static int cmd_info(char *args) {
   else /*excute n code*/
   {
     if(*arg == 'r') isa_reg_display();
-    else {};//waiting for w
+    else wp_info();
   }
   return 0;
 }
@@ -175,6 +182,34 @@ static int cmd_p(char *args) {
     return 0;
   }
   else assert(0);
+  return 0;
+}
+
+void wp_add(char *e);
+static int cmd_w(char *args) {
+  /* extract the first argument */
+  char *arg = strtok(NULL, " ");
+
+  if (arg == NULL) {
+    /* no argument,error*/
+    printf("enter the args\n");
+    assert(0);
+  }
+  wp_add(arg);
+  return 0;
+}
+
+void wp_del(int no);
+static int cmd_d(char *args) {
+  /* extract the first argument */
+  char *arg = strtok(NULL, " ");
+
+  if (arg == NULL) {
+    /* no argument,error*/
+    printf("enter the args\n");
+    assert(0);
+  }
+  wp_del(atoi(arg));
   return 0;
 }
 
