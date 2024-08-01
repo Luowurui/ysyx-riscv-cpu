@@ -115,8 +115,7 @@ void wp_del(int no) {
   printf("No watchpoint number %d found\n", no);
 }
 
-void wp_info()
-{
+void wp_info(){
   WP *pos=head;
   if(!pos)
   {

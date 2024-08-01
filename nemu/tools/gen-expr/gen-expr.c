@@ -31,39 +31,82 @@ static char *code_format =
 "  return 0; "
 "}";
 
-void gen_num() {
-  int num = rand() % 100; // Generates a random number between 0 and 99
-  char num_str[12];
-  sprintf(num_str, "%d", num);
-  strcat(buf, num_str);
+// 生成一个随机数字并将其附加到缓冲区的末尾
+static void gen_num() {
+    // 生成1到9之间的随机数
+    word_t num = rand() % 9 + 1; 
+    char num_str[2]; // 临时缓冲区
+    snprintf(num_str, sizeof(num_str), "%d", num); // 将数字转化为字符串
+
+    // 检查缓冲区是否有足够的空间
+    if (strlen(buf) + strlen(num_str) < sizeof(buf)) {
+        strcat(buf, num_str); // 添加到buf末尾
+    } 
+    
+    return; // 缓冲区已满，无法添加更多字
 }
 
 void gen_rand_op() {
+  if (strlen(buf) + strlen(2) < sizeof(buf))
+  {
   switch (rand() % 4) {
     case 0: strcat(buf, " + "); break;
     case 1: strcat(buf, " - "); break;
     case 2: strcat(buf, " * "); break;
     case 3: strcat(buf, " / "); break;
   }
+  }
 }
 
-void gen(char c) {
-  int len = strlen(buf);
-  buf[len] = c;
-  buf[len + 1] = '\0';
-}
 
 int choose(int n) {
   return rand() % n;
 }
-
+/ 生成随机表达式
 static void gen_rand_expr() {
- //buf[0] = '\0';
-  switch (choose(3)) {
-    case 0: gen_num(); break;
-    case 1: gen('('); gen_rand_expr(); gen(')'); break;
-    default: gen_rand_expr(); gen_rand_op(); gen_rand_expr(); break;
+    switch (choose(3)) {
+        case 0: 
+            if( buf[strlen(buf) - 1]!=')')
+            {
+            gen_num(); // 生成随机数字
+            }
+            else
+            {
+              gen_rand_expr();
+            }
+            break;
+        case 1: 
+              // 避免在操作数之后立即插入左括号，而是在操作符之后插入左括号
+            if (buf[0] != '\0' &&  strchr("+-*/", buf[strlen(buf) - 1]))
+            {
+                strcat(buf, "("); // 将左括号添加到缓冲区末尾
+                gen_rand_expr(); // 递归生成随机表达式
+                strcat(buf, ")"); // 将右括号添加到缓冲区末尾
+            } 
+            else 
+            {
+                gen_rand_expr(); // 递归生成随机表达式
+            }
+            break;
+        default: 
+            gen_rand_expr(); // 递归生成随机表达式
+            gen_rand_op(); // 生成随机操作符
+            gen_rand_expr(); // 递归生成随机表达式
+            break;
+    }
+}
+ 
+ 
+// 检查表达式中的除零行为
+static int check_division_by_zero() {
+  char *p = buf;
+  while (*p) {
+    if (*p == '/' && *(p + 1) == '0') {
+      return 1; // 表达式中存在除零行为
+    }
+    p++;
   }
+  return 0; // 表达式中不存在除零行为
 }
 
 int main(int argc, char *argv[]) {

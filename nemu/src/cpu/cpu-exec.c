@@ -18,9 +18,6 @@
 #include <cpu/difftest.h>
 #include <locale.h>
 
-
-
-void wp_difftest();
 /* The assembly code of instructions executed is only output to the screen
  * when the number of instructions executed is less than this value.
  * This is useful when you use the `si' command.
@@ -35,6 +32,7 @@ static bool g_print_step = false;
 
 void device_update();
 
+void wp_difftest();
 static void trace_and_difftest(Decode *_this, vaddr_t dnpc) {
 #ifdef CONFIG_ITRACE_COND
   if (ITRACE_COND) { log_write("%s\n", _this->logbuf); }

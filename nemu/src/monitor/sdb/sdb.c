@@ -50,6 +50,7 @@ static int cmd_c(char *args) {
 
 
 static int cmd_q(char *args) {
+  nemu_state.state = NEMU_QUIT;//优雅地退出
   return -1;
 }
 
@@ -126,7 +127,7 @@ static int cmd_si(char *args) {
   }
   return 0;
 }
-
+void wp_info();
 static int cmd_info(char *args) {
   /* extract the first argument */
   char *arg = strtok(NULL, " ");
@@ -138,7 +139,7 @@ static int cmd_info(char *args) {
   else /*excute n code*/
   {
     if(*arg == 'r') isa_reg_display();
-    else {};//waiting for w
+    else wp_info();
   }
   return 0;
 }
