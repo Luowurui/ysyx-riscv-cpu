@@ -19,7 +19,6 @@
 #include <common.h>
 
 word_t expr(char *e, bool *success);
-void wp_add(char *e);
-void add_watchpoint(char *e);
+
 
 #endif
