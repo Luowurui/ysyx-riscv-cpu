@@ -129,24 +129,41 @@ void wp_info(){
   }
 }
 
-void wp_difftest(){
-  // 添加检查监视点的逻辑
-  WP *wp = head;
-  for (int i = 0; i < NR_WP; i ++) {
-    word_t new_value;
-    bool success;
-    new_value= expr(wp->expr, &success);
-    if (!success) {
-      printf("Failed to evaluate expression: %s\n", wp->expr);
-      return;
+// void wp_difftest(){
+//   // 添加检查监视点的逻辑
+//   WP *wp = head;
+//   for (int i = 0; i < NR_WP; i ++) {
+//     word_t new_value;
+//     bool success;
+//     new_value= expr(wp->expr, &success);
+//     if (!success) {
+//       printf("Failed to evaluate expression: %s\n", wp->expr);
+//       return;
+//     }
+//     if (new_value !=  wp_pool[i].last_value) {
+//       printf("Watchpoint %d triggered: %s\n", wp_pool[i].NO, wp_pool[i].expr);
+//       printf("Old value: %d\n", wp_pool[i].last_value);
+//       printf("New value: %d\n", new_value);
+//       wp_pool[i].last_value = new_value;
+//       nemu_state.state = NEMU_STOP;
+//       return;
+//     }
+//   }
+// }
+void wp_difftest()
+{
+   WP* pos = head;
+  while (pos) {
+    bool _;
+    word_t new = expr(pos->expr, &_);
+    if (pos->last_value != new) {
+      printf("Watchpoint %d: %s\n"
+        "Old value = %d\n"
+        "New value = %d\n"
+        , pos->NO, pos->expr, pos->last_value, new);
+      pos->last_value = new;
+      nemu_state.state=NEMU_STOP;
     }
-    if (new_value !=  wp_pool[i].last_value) {
-      printf("Watchpoint %d triggered: %s\n", wp_pool[i].NO, wp_pool[i].expr);
-      printf("Old value: %d\n", wp_pool[i].last_value);
-      printf("New value: %d\n", new_value);
-      wp_pool[i].last_value = new_value;
-      nemu_state.state = NEMU_STOP;
-      return;
-    }
+    pos = pos->next;
   }
 }

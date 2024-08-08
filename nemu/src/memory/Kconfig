@@ -30,5 +30,11 @@ config MEM_RANDOM
   default y
   help
     This may help to find undefined behaviors.
+  
+  config WATCHPOINT
+    bool "Enable watchpoint"
+    default n
+    help
+      Enable watchpoint feature to monitor memory access.
 
 endmenu #MEMORY
