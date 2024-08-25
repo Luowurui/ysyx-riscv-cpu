@@ -1,8 +1,8 @@
-TOPNAME = top
+TOPNAME = top_cpu
 NXDC_FILES = constr/top.nxdc
 C_NAME = sim_main
 W_NAME = wave
-O_NAME = Vtop
+O_NAME = Vtop_cpu
 
 VERILATOR = verilator
 VERILATOR_CFLAGS += -MMD --build -cc  \
@@ -47,12 +47,12 @@ run: $(BIN)
 	@$^
 	
 sim:
-	verilator --cc --exe --build -j 0 -Wall --trace ./csrc/$(C_NAME).cpp ./vsrc/$(TOPNAME).v  #仿真		
+	verilator --cc --exe --build -j 0 -Wall --trace ./csrc/$(C_NAME).cpp ./vsrc/$(TOPNAME).v -I./vsrc --top-module $(TOPNAME) -Wno-UNUSEDSIGNAL #仿真		
 	obj_dir/$(O_NAME)               #打开输出文件					
 	gtkwave ./wsrc/$(W_NAME).vcd            #打开波形
 	$(call git_commit, "sim RTL") # DO NOT REMOVE THIS LINE!!!
 	@echo "Write this Makefile by your self."
 	
 clean:
-	rm -rf $(BUILD_DIR)
+	rm -rf $(OBJ_DIR)
 include ../Makefile
